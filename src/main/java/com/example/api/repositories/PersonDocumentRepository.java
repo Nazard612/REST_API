@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PersonDocumentRepository extends JpaRepository<PersonDocument, java.util.UUID> {
-    @Query(value = "select person_id from PersonDocument where documents_value = :val")
+    @Query(value = "select personModel from PersonDocument where documentsValue = :val")
     PersonModel findByValue(@Param("val") String val);
-    @Query(value = "select document_type_id from PersonDocument where documents_value = :val")
+    @Query(value = "select documentTypeId from PersonDocument where documentsValue = :val")
     DocumentTypeModel findId(@Param("val") String val);
 }

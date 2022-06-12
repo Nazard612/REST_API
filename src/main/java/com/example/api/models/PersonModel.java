@@ -1,71 +1,64 @@
 package com.example.api.models;
 
 import org.hibernate.annotations.Type;
-
 import javax.persistence.*;
-import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.*;
-
 @Entity
 @Table(name = "person")
-public class PersonModel implements Serializable{
+public class PersonModel {
     @Id
     @Column(name = "person_id")
     @Type(type="pg-uuid")
-    private java.util.UUID person_id;
+    private UUID personId;
     @Column(name = "full_name")
-    private String full_name;
+    private String fullName;
     @Column(name = "birth_day")
-    private LocalDate birth_day;
-
+    private LocalDate birthDay;
     @OneToMany(mappedBy = "personModel", cascade = CascadeType.ALL)
-    private List<PersonAddress> personAddresses =new ArrayList<>();
-    @OneToMany(mappedBy = "person_id", cascade = CascadeType.ALL)
-    private List<PersonContact> personContacts =new ArrayList<>();
-    @OneToMany(mappedBy = "person_id", cascade = CascadeType.ALL)
-    private List<PersonDocument> personDocuments =new ArrayList<>();
-
-    public PersonModel(String full_name, LocalDate birth_day){
-        person_id=UUID.randomUUID();
-        this.full_name=full_name;
-        this.birth_day=birth_day;
+    private List<PersonAddress> personAddresses = new ArrayList<>();
+    @OneToMany(mappedBy = "personModel", cascade = CascadeType.ALL)
+    private List<PersonContact> personContacts = new ArrayList<>();
+    @OneToMany(mappedBy = "personModel", cascade = CascadeType.ALL)
+    private List<PersonDocument> personDocuments = new ArrayList<>();
+    public PersonModel(){}
+    public PersonModel(String fullName, LocalDate birthDay){
+        personId=UUID.randomUUID();
+        this.fullName=fullName;
+        this.birthDay=birthDay;
     }
-    public PersonModel(){
-
+    public UUID getPersonId() {
+        return personId;
     }
-    public java.util.UUID getPerson_id() {
-        return person_id;
+    public void setPersonId(UUID personId){this.personId=personId;}
+    public String getFullName() {
+        return fullName;
     }
-    public void setPerson_id(java.util.UUID person_id){this.person_id=person_id;}
-    public String getFull_name() {
-        return full_name;
-    }
-    public void setFull_name(String full_name) {
-        this.full_name = full_name;
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
     public LocalDate getBirth() {
-        return birth_day;
+        return birthDay;
     }
-    public void setBirth(LocalDate birth_day) {
-        this.birth_day = birth_day;
+    public void setBirth(LocalDate birthDay) {
+        this.birthDay = birthDay;
     }
-    public List<PersonAddress> getPerson_addresses(){
+    public List<PersonAddress> getPersonAddresses(){
         return personAddresses;
     }
-    public void setPerson_addresses(List<PersonAddress> personAddresses){
+    public void setPersonAddresses(List<PersonAddress> personAddresses){
         this.personAddresses = personAddresses;
     }
-    public List<PersonContact> getPerson_contacts(){
+    public List<PersonContact> getPersonContacts(){
         return personContacts;
     }
-    public void setPerson_contacts(List<PersonContact> personContacts){
+    public void setPersonContacts(List<PersonContact> personContacts){
         this.personContacts = personContacts;
     }
-    public List<PersonDocument> getPerson_documents(){
+    public List<PersonDocument> getPersonDocuments(){
         return personDocuments;
     }
-    public void setPerson_documents(List<PersonDocument> personDocuments){
+    public void setPersonDocuments(List<PersonDocument> personDocuments){
         this.personDocuments = personDocuments;
     }
 }

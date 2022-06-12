@@ -11,26 +11,24 @@ public class AddressModel {
     @Id
     @Column(name = "address_id")
     @Type(type="pg-uuid")
-    private java.util.UUID address_id;
+    private UUID addressId;
     @Column(name = "address_value")
-    private String address_value;
-    public AddressModel(){
-
+    private String addressValue;
+    public AddressModel(){}
+    public AddressModel(String addressValue){
+        addressId= UUID.randomUUID();
+        this.addressValue=addressValue;
     }
-    public AddressModel(String address_value){
-        address_id= UUID.randomUUID();
-        this.address_value=address_value;
+    public UUID getAddress_id() {
+        return addressId;
     }
-    public java.util.UUID getAddress_id() {
-        return address_id;
-    }
-    public void setAddress_id(java.util.UUID address_id) {
-        this.address_id=address_id;
+    public void setAddress_id(UUID addressId) {
+        this.addressId=addressId;
     }
     public String getAddress_value() {
-        return address_value;
+        return addressValue;
     }
-    public void setAddress_value(String address_value) {
-        this.address_value = address_value;
+    public void setAddress_value(String addressValue) {
+        this.addressValue = addressValue;
     }
 }

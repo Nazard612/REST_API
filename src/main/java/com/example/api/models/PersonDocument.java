@@ -11,43 +11,43 @@ public class PersonDocument {
     @Id
     @Column(name = "documents_id")
     @Type(type="pg-uuid")
-    private java.util.UUID documents_id;
+    private UUID documentsId;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "document_type_id")
-    private DocumentTypeModel document_type_id;
+    private DocumentTypeModel documentTypeId;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "person_id")
-    private PersonModel person_id;
+    private PersonModel personModel;
     @Column(name = "documents_value")
-    private String documents_value;
+    private String documentsValue;
     public PersonDocument(){
-        documents_id= UUID.randomUUID();
+        documentsId= UUID.randomUUID();
     }
-    public PersonDocument(DocumentTypeModel document_type_id, PersonModel person_id, String documents_value){
-        documents_id= UUID.randomUUID();
-        this.document_type_id=document_type_id;
-        this.person_id=person_id;
-        this.documents_value=documents_value;
+    public PersonDocument(DocumentTypeModel documentTypeId, PersonModel personModel, String documentsValue){
+        documentsId= UUID.randomUUID();
+        this.documentTypeId=documentTypeId;
+        this.personModel=personModel;
+        this.documentsValue=documentsValue;
     }
-    public java.util.UUID getDocuments_id() {
-        return documents_id;
+    public UUID getDocumentsId() {
+        return documentsId;
     }
-    public void setDocuments_id(java.util.UUID documents_id){
-        this.documents_id=documents_id;
+    public void setDocumentsId(UUID documentsId){
+        this.documentsId=documentsId;
     }
-    public void setPerson_id(PersonModel person_id){
-        this.person_id=person_id;
+    public void setPersonModel(PersonModel personModel){
+        this.personModel=personModel;
     }
-    public String getDocuments_value(){
-        return documents_value;
+    public String getDocumentsValue(){
+        return documentsValue;
     }
-    public void setDocuments_value(String documents_value){
-        this.documents_value=documents_value;
+    public void setDocumentsValue(String documentsValue){
+        this.documentsValue=documentsValue;
     }
-    public DocumentTypeModel getDocument_type_id(){
-        return document_type_id;
+    public DocumentTypeModel getDocumentTypeId(){
+        return documentTypeId;
     }
-    public void setDocument_type_id(DocumentTypeModel document_type_id){
-        this.document_type_id=document_type_id;
+    public void setDocumentTypeId(DocumentTypeModel documentTypeId){
+        this.documentTypeId=documentTypeId;
     }
 }

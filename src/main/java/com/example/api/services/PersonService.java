@@ -1,33 +1,28 @@
 package com.example.api.services;
 
+import com.example.api.controllers.PersonController;
 import com.example.api.models.*;
 import com.example.api.repositories.*;
-import org.springframework.http.ResponseEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.Resource;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class PersonService {
-    @Resource
+    Logger logger = LoggerFactory.getLogger(PersonController.class);
     private final PersonRepository personRepository;
-    @Resource
     private final AddressRepository addressRepository;
-    @Resource
     private final PersonDocumentRepository personDocumentRepository;
-    @Resource
     private final PersonContactRepository personContactRepository;
-    @Resource
     private final AddressTypeRepository addressTypeRepository;
-    @Resource
     private final ContactTypeRepository contactTypeRepository;
-    @Resource
     private final DocumentTypeRepository documentTypeRepository;
-    @Resource
     private final PersonAddressRepository personAddressRepository;
 
     public PersonService(PersonRepository personRepository, AddressRepository addressRepository, PersonDocumentRepository personDocumentRepository, PersonContactRepository personContactRepository, AddressTypeRepository addressTypeRepository, ContactTypeRepository contactTypeRepository, DocumentTypeRepository documentTypeRepository, PersonAddressRepository personAddressRepository){
@@ -41,117 +36,144 @@ public class PersonService {
         this.personAddressRepository = personAddressRepository;
     }
 
-    public List<PersonModel> getAllPersons() {
-        return personRepository.findAll();
+    public List<PersonModel> getAllPersons(int pageNo, int pageSize) {
+        Pageable paging = PageRequest.of(pageNo, pageSize);
+        logger.info("Получен номер и размер страницы");
+        Page<PersonModel> pagedResult = personRepository.findAll(paging);
+        logger.info("Данные о всех гражданах получены и отправлены");
+        return pagedResult.toList();
     }
     public Optional<PersonModel> getPersonById(String personId){
-        java.util.UUID q = UUID.fromString(personId);
-        return personRepository.findById(q);
+        UUID humanId = UUID.fromString(personId);
+        logger.info("ID гражданина получено");
+        Optional<PersonModel> lst = personRepository.findById(humanId);
+        logger.info("Данные о гражданине получены и отправлены");
+        return lst;
     }
     public void createPerson(PersonModel personModel) {
-        PersonModel end_pm = new PersonModel(personModel.getFull_name(), personModel.getBirth());
-        personRepository.save(end_pm);
-        for (PersonAddress pa : personModel.getPerson_addresses()){
-            AddressModel ad = pa.getAddress_name_id();
-            AddressTypeModel at = pa.getAddress_type_id();
-            AddressModel end_am = new AddressModel(ad.getAddress_value());
-            addressRepository.save(end_am);
-            AddressTypeModel end_at = new AddressTypeModel(at.getAddress_name());
-            addressTypeRepository.save(end_at);
-            personAddressRepository.save(new PersonAddress(end_am, end_at, end_pm));
+        PersonModel human = new PersonModel(personModel.getFullName(), personModel.getBirth());
+        personRepository.save(human);
+        logger.info("ФМО и дата рождения гражданина сохранены");
+        for (PersonAddress personAddress : personModel.getPersonAddresses()){
+            AddressModel address = personAddress.getAddressNameId();
+            AddressTypeModel addressType = personAddress.getAddressTypeId();
+            AddressModel resultAddress = new AddressModel(address.getAddress_value());
+            addressRepository.save(resultAddress);
+            AddressTypeModel checkAddress = addressTypeRepository.findByType(addressType.getAddressName());
+            if (checkAddress == null){
+                AddressTypeModel resultAddressType = new AddressTypeModel(addressType.getAddressName());
+                addressTypeRepository.save(resultAddressType);
+                personAddressRepository.save(new PersonAddress(resultAddress, resultAddressType, human));
+            }else{
+                personAddressRepository.save(new PersonAddress(resultAddress, checkAddress, human));
+            }
         }
-        for (PersonContact pc : personModel.getPerson_contacts()){
-            ContactTypeModel ct = pc.getContact_type_id();
-            ContactTypeModel end_ct = new ContactTypeModel(ct.getContact_name());
-            contactTypeRepository.save(end_ct);
-            personContactRepository.save(new PersonContact(end_ct, end_pm, pc.getContact_value()));
+        logger.info("Данные об адресах гражданина сохранены");
+        for (PersonContact personContact : personModel.getPersonContacts()){
+            ContactTypeModel contactType = personContact.getContactTypeId();
+            ContactTypeModel checkContact = contactTypeRepository.findByType(contactType.getContactName());
+            if (checkContact == null){
+                ContactTypeModel resultContactType = new ContactTypeModel(contactType.getContactName());
+                contactTypeRepository.save(resultContactType);
+                personContactRepository.save(new PersonContact(resultContactType, human, personContact.getContactValue()));
+            }else{
+                personContactRepository.save(new PersonContact(checkContact, human, personContact.getContactValue()));
+            }
         }
-        for (PersonDocument pd : personModel.getPerson_documents()){
-            DocumentTypeModel dt = pd.getDocument_type_id();
-            DocumentTypeModel end_pd = new DocumentTypeModel(dt.getDocument_name());
-            documentTypeRepository.save(end_pd);
-            personDocumentRepository.save(new PersonDocument(end_pd, end_pm, pd.getDocuments_value()));
+        logger.info("Данные о контактах гражданина сохранены");
+        for (PersonDocument personDocument : personModel.getPersonDocuments()){
+            DocumentTypeModel documentType = personDocument.getDocumentTypeId();
+            DocumentTypeModel checkDocument = documentTypeRepository.findByType(documentType.getDocumentName());
+            if (checkDocument == null){
+                DocumentTypeModel resultDocumentType = new DocumentTypeModel(documentType.getDocumentName());
+                documentTypeRepository.save(resultDocumentType);
+                personDocumentRepository.save(new PersonDocument(resultDocumentType, human, personDocument.getDocumentsValue()));
+            }else{
+                personDocumentRepository.save(new PersonDocument(checkDocument, human, personDocument.getDocumentsValue()));
+            }
         }
+        logger.info("Данные о документах гражданина сохранены");
     }
     public void putPersonById(String personId, PersonModel personModel){
-        java.util.UUID q = UUID.fromString(personId);
-        Optional<PersonModel> p = personRepository.findById(q);
-        if (p.isPresent()) {
-            PersonModel _p = p.get();
-            _p.setFull_name(personModel.getFull_name());
-            _p.setBirth(personModel.getBirth());
-            personRepository.save(_p);
+        UUID person = UUID.fromString(personId);
+        Optional<PersonModel> personMod = personRepository.findById(person);
+        logger.info("Неактуальные данные о гражданине получены");
+        if (personMod.isPresent()) {
+            PersonModel resultPerson = personMod.get();
+            resultPerson.setFullName(personModel.getFullName());
+            resultPerson.setBirth(personModel.getBirth());
+            personRepository.save(resultPerson);
             int count = 0;
-            for (PersonAddress pa : personModel.getPerson_addresses()){
-                List<PersonAddress> lst= _p.getPerson_addresses();
-                PersonAddress end_pa = lst.get(count);
-                AddressModel ad = end_pa.getAddress_name_id();
-                AddressTypeModel at = end_pa.getAddress_type_id();
-                AddressModel new_ad = pa.getAddress_name_id();
-                AddressTypeModel new_at = pa.getAddress_type_id();
-                ad.setAddress_value(new_ad.getAddress_value());
-                at.setAddress_name(new_at.getAddress_name());
-                addressRepository.save(ad);
-                addressTypeRepository.save(at);
+            for (PersonAddress personAddress : personModel.getPersonAddresses()){
+                List<PersonAddress> listOfAddresses = resultPerson.getPersonAddresses();
+                PersonAddress resultPersonAddress = listOfAddresses.get(count);
+                AddressModel address= resultPersonAddress.getAddressNameId();
+                AddressTypeModel addressType = resultPersonAddress.getAddressTypeId();
+                AddressModel resultAddress = personAddress.getAddressNameId();
+                AddressTypeModel resultAddressType = personAddress.getAddressTypeId();
+                address.setAddress_value(resultAddress.getAddress_value());
+                addressType.setAddressName(resultAddressType.getAddressName());
+                addressRepository.save(address);
+                addressTypeRepository.save(addressType);
                 count++;
             }
+            logger.info("Данные об адресах гражданина сохранены");
             count=0;
-            for (PersonContact pc : personModel.getPerson_contacts()){
-                List<PersonContact> lst_c= _p.getPerson_contacts();
-                PersonContact end_pc = lst_c.get(count);
-                ContactTypeModel ct = end_pc.getContact_type_id();
-                ContactTypeModel new_ct = pc.getContact_type_id();
-                ct.setContact_name(new_ct.getContact_name());
-                end_pc.setContact_value(pc.getContact_value());
-                contactTypeRepository.save(ct);
-                personContactRepository.save(end_pc);
+            for (PersonContact personContact : personModel.getPersonContacts()){
+                List<PersonContact> listOfPersonContact = resultPerson.getPersonContacts();
+                PersonContact resultPersonContact = listOfPersonContact.get(count);
+                ContactTypeModel contactType = resultPersonContact.getContactTypeId();
+                ContactTypeModel resultContactType = personContact.getContactTypeId();
+                contactType.setContactName(resultContactType.getContactName());
+                resultPersonContact.setContactValue(personContact.getContactValue());
+                contactTypeRepository.save(contactType);
+                personContactRepository.save(resultPersonContact);
                 count++;
             }
+            logger.info("Данные о контактах гражданина сохранены");
             count=0;
-            for (PersonDocument pd : personModel.getPerson_documents()){
-                List<PersonDocument> lst_d= _p.getPerson_documents();
-                PersonDocument end_pd = lst_d.get(count);
-                DocumentTypeModel dt = end_pd.getDocument_type_id();
-                DocumentTypeModel new_dt = pd.getDocument_type_id();
-                dt.setDocument_name(new_dt.getDocument_name());
-                end_pd.setDocuments_value(pd.getDocuments_value());
-                documentTypeRepository.save(dt);
-                personDocumentRepository.save(end_pd);
+            for (PersonDocument personDocument : personModel.getPersonDocuments()){
+                List<PersonDocument> listOfPersonDocument = resultPerson.getPersonDocuments();
+                PersonDocument resultPersonDocument = listOfPersonDocument.get(count);
+                DocumentTypeModel documentType = resultPersonDocument .getDocumentTypeId();
+                DocumentTypeModel resultDocumentType = personDocument.getDocumentTypeId();
+                documentType.setDocumentName(resultDocumentType.getDocumentName());
+                resultPersonDocument.setDocumentsValue(personDocument.getDocumentsValue());
+                documentTypeRepository.save(documentType);
+                personDocumentRepository.save(resultPersonDocument );
                 count++;
             }
+            logger.info("Данные о документах гражданина сохранены");
         }
     }
     public void deletePerson(String personId) {
-        java.util.UUID q = UUID.fromString(personId);
-        Optional<PersonModel> p = personRepository.findById(q);
-        if (p.isPresent()) {
-            PersonModel _p = p.get();
-            personRepository.deleteById(_p.getPerson_id());
-            for (PersonContact pc : _p.getPerson_contacts()){
-                ContactTypeModel new_ct = pc.getContact_type_id();
-                contactTypeRepository.deleteById(new_ct.getContact_type_id());
-                personContactRepository.deleteById(pc.getContact_id());
+        java.util.UUID person = UUID.fromString(personId);
+        Optional<PersonModel> personMod = personRepository.findById(person);
+        if (personMod.isPresent()) {
+            PersonModel personModel = personMod.get();
+            personRepository.deleteById(personModel.getPersonId());
+            for (PersonContact personContact : personModel.getPersonContacts()){
+                personContactRepository.deleteById(personContact.getContactId());
             }
-            for (PersonAddress pa : _p.getPerson_addresses()){
-                AddressModel new_ad = pa.getAddress_name_id();
-                AddressTypeModel new_at = pa.getAddress_type_id();
-                addressRepository.deleteById(new_ad.getAddress_id());
-                addressTypeRepository.deleteById(new_at.getAddress_type_id());
-                personAddressRepository.deleteById(pa.getPerson_address_id());
+            logger.info("Данные о контактах гражданина удалены");
+            for (PersonAddress personAddress : personModel.getPersonAddresses()){
+                AddressModel address = personAddress.getAddressNameId();
+                addressRepository.deleteById(address.getAddress_id());
+                personAddressRepository.deleteById(personAddress.getPersonAddressId());
             }
-            for (PersonDocument pd : _p.getPerson_documents()){
-                DocumentTypeModel new_dt = pd.getDocument_type_id();
-                documentTypeRepository.deleteById(new_dt.getDocument_type_id());
-                personDocumentRepository.deleteById(pd.getDocuments_id());
+            logger.info("Данные об адресах гражданина удалены");
+            for (PersonDocument personDocument : personModel.getPersonDocuments()){
+                personDocumentRepository.deleteById(personDocument.getDocumentsId());
             }
+            logger.info("Данные о документах гражданина удалены");
         }
     }
     public Boolean getVerify(String personName, String personPass) {
-        DocumentTypeModel dt = personDocumentRepository.findId(personPass);
+        DocumentTypeModel documentTypeModel = personDocumentRepository.findId(personPass);
         Boolean result = null;
-        if (dt.getDocument_name().equals("Паспорт")){
-            PersonModel p = personDocumentRepository.findByValue(personPass);
-            result = personName.equals(p.getFull_name());
+        if (documentTypeModel.getDocumentName().equals("Паспорт")){
+            PersonModel person = personDocumentRepository.findByValue(personPass);
+            result = personName.equals(person.getFullName());
         }
         return result;
     }

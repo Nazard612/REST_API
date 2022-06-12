@@ -11,26 +11,24 @@ public class DocumentTypeModel {
     @Id
     @Column(name = "document_type_id")
     @Type(type="pg-uuid")
-    private java.util.UUID document_type_id;
+    private UUID documentTypeId;
     @Column(name = "document_name")
-    private String document_name;
-    public DocumentTypeModel(){
-
+    private String documentName;
+    public DocumentTypeModel(){}
+    public DocumentTypeModel(String documentName){
+        documentTypeId= UUID.randomUUID();
+        this.documentName=documentName;
     }
-    public DocumentTypeModel(String document_name){
-        document_type_id= UUID.randomUUID();
-        this.document_name=document_name;
+    public UUID getDocumentTypeId() {
+        return documentTypeId;
     }
-    public java.util.UUID getDocument_type_id() {
-        return document_type_id;
+    public void setDocumentTypeId(UUID documentTypeId){
+        this.documentTypeId=documentTypeId;
     }
-    public void setDocument_type_id(java.util.UUID document_type_id){
-        this.document_type_id=document_type_id;
+    public String getDocumentName() {
+        return documentName;
     }
-    public String getDocument_name() {
-        return document_name;
-    }
-    public void setDocument_name(String document_name) {
-        this.document_name = document_name;
+    public void setDocumentName(String documentName) {
+        this.documentName = documentName;
     }
 }

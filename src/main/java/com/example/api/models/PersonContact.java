@@ -11,44 +11,43 @@ public class PersonContact {
     @Id
     @Column(name = "contact_id")
     @Type(type="pg-uuid")
-    private java.util.UUID contact_id;
+    private UUID contactId;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "contact_type_id")
-    private ContactTypeModel contact_type_id;
+    private ContactTypeModel contactTypeId;
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "person_id")
-    private PersonModel person_id;
+    private PersonModel personModel;
     @Column(name = "contact_value")
-    private String contact_value;
+    private String contactValue;
     public PersonContact(){
-        contact_id=UUID.randomUUID();
+        contactId=UUID.randomUUID();
     }
-    public PersonContact(ContactTypeModel contact_type_id, PersonModel person_id, String contact_value){
-        contact_id= UUID.randomUUID();
-        this.contact_type_id=contact_type_id;
-        this.person_id=person_id;
-        this.contact_value=contact_value;
+    public PersonContact(ContactTypeModel contactTypeId, PersonModel personModel, String contactValue){
+        contactId= UUID.randomUUID();
+        this.contactTypeId=contactTypeId;
+        this.personModel=personModel;
+        this.contactValue=contactValue;
     }
-    public java.util.UUID getContact_id() {
-        return contact_id;
+    public UUID getContactId() {
+        return contactId;
     }
-    public void setContact_id(java.util.UUID contact_id){
-        this.contact_id=contact_id;
+    public void setContactId(UUID contactId){
+        this.contactId=contactId;
     }
-
-    public void setPerson_id(PersonModel person_id){
-        this.person_id=person_id;
+    public void setPersonModel(PersonModel personModel){
+        this.personModel=personModel;
     }
-    public String getContact_value(){
-        return contact_value;
+    public String getContactValue(){
+        return contactValue;
     }
-    public void setContact_value(String contact_value){
-        this.contact_value=contact_value;
+    public void setContactValue(String contactValue){
+        this.contactValue=contactValue;
     }
-    public ContactTypeModel getContact_type_id(){
-        return contact_type_id;
+    public ContactTypeModel getContactTypeId(){
+        return contactTypeId;
     }
-    public void setContact_type_id(ContactTypeModel contact_type_id){
-        this.contact_type_id=contact_type_id;
+    public void setContactTypeId(ContactTypeModel contactTypeId){
+        this.contactTypeId=contactTypeId;
     }
 }
